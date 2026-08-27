@@ -1,7 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
+
 import { fetchVideosByUser, markVideoAsWatched, unmarkVideoAsWatched } from '../../../../store/actions/authActions';
 import ReactPlayer from 'react-player';
+import { Tabs, TabList, Tab, TabPanel } from 'react-tabs';
+import 'react-tabs/style/react-tabs.css';
+
 import '../Videos/Videos.css';
 
 const Videos = () => {
@@ -10,6 +14,8 @@ const Videos = () => {
   const [selectedVideo, setSelectedVideo] = useState(null);
   const [watchedVideos, setWatchedVideos] = useState({});
   const [accordionState, setAccordionState] = useState({});
+  
+
 
   useEffect(() => {
     dispatch(fetchVideosByUser());
@@ -22,6 +28,8 @@ const Videos = () => {
       videosData.forEach(section => {
         section.videos.forEach(video => {
           console.log("Video in Data:", video);
+          console.log('URL de la imagen:', video.url);
+
         });
       });
     }
@@ -118,23 +126,31 @@ const Videos = () => {
     }));
   };
 
+ 
+  const [activeTab, setActiveTab] = useState(0);
+
+
   return (
-    <div className="videos-container">
+    <div className="bodyVideos">
+
+<div className="videos-container">
       <div className="main-content">
         {selectedVideo ? (
           <>
             <div className="video-header">
-              <h3>{selectedVideo.title}</h3>
+              <h3 className="titulo">{selectedVideo.title}</h3>
             </div>
             <ReactPlayer
               url={selectedVideo.url}
               controls
-              width="145vh"
+              width="155vh"
               height="65vh"
+              className= "react-playerV"
+              playing={true}
+              muted= {false}
               onEnded={advanceToNextVideo}
             />
-            <div className="video-content">
-              <p>{selectedVideo.content}</p>
+            <div className="watched">
               {!watchedVideos[selectedVideo.id] ? (
                 <div className="mark-as-watched">
                   <button onClick={() => markAsWatched(selectedVideo.id)}>
@@ -148,14 +164,32 @@ const Videos = () => {
                   </button>
                 </div>
               )}
+          </div>
+          <Tabs  selectedIndex={activeTab} onSelect={index => setActiveTab(index)}>
+             <TabList >
+    <Tab >Descripción</Tab>
+    <Tab>Recursos</Tab>
+  </TabList>
+
+  <TabPanel>
+    
+            <div className="video-content">
+          
+              <p >{selectedVideo.content}</p>
+          
 
             </div>
+            </TabPanel>
+            </Tabs>
           </>
         ) : (
           <p>No hay un video seleccionado</p>
         )}
+
       </div>
-      <div className="SideBarVideos">
+
+      
+<div className="SideBarVideos">
         {videosData && videosData.length > 0 ? (
           videosData.map((section) => (
             <div key={section.section_id}>
@@ -165,6 +199,7 @@ const Videos = () => {
               >
                 <div className="sequence-box">{section.section_sequence_number}</div>
                 {section.section_name}
+                
               </button>
               {accordionState[section.section_id] && section.videos && section.videos.length > 0 ? (
                 section.videos.map((video) => (
@@ -174,8 +209,12 @@ const Videos = () => {
                     className="video-item"
                   >
                     <div className="sequence-box">{video.sequence_number}</div>
-                    <div className="video-thumbnail" style={{ backgroundImage: `url(${video.url})` }}>
-                    </div>
+           
+                    
+                 
+  
+          
+                    
                     <span>{video.title}</span>
                     {watchedVideos[video.id] && <div className="watched-check checked">✔</div>}
                   </div>
@@ -188,6 +227,7 @@ const Videos = () => {
         ) : (
           <p>No se ha agregado ninguna sección aún</p>
         )}
+      </div>
       </div>
     </div>
   );
